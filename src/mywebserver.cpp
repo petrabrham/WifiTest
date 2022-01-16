@@ -8,10 +8,13 @@
 #include "defines.h"
 #include "ArduinoNvs.h"
 #include "mywebserver.h"
-
+#include "mywifi.h"
 
 // GLOBALS
 WebServer server(80);
+
+//externs
+extern CMyWifi myWifi;
 
 // webobjects
 #include "webobjects.inc"
@@ -86,17 +89,9 @@ void HandleRoot()
 
 void HandleSetup()
 {
-  String message = "TTGO Setup Page\n\n";
+  String message;
   String str;
   uint8_t i;
-
-  // help for setup
-  message += "Using:\n";
-  message += "  setup?arg1=value1[&arg2=value2]...\n\n";
-  message += "  arg:\n";
-  message += "    ssid=[string] ... WiFi SSID\n";
-  message += "    password=[string] ... Wifi password\n";
-  message += "    reset=now ... Reset board\n\n";
 
   // parse arguments
   String argName;
@@ -121,22 +116,75 @@ void HandleSetup()
     }
   }
 
-  message += "Server Method = "; 
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\n";
-  message += "Arguments = " + String(server.args()) + "\n";
+  Serial.print("Server Method = "); 
+  Serial.println((server.method() == HTTP_GET) ? "GET" : "POST");
+  Serial.println("Arguments = " + String(server.args()));
 
   for (i = 0; i < server.args(); i++) {
-    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+    Serial.println(" " + server.argName(i) + ": " + server.arg(i));
   }
 
-  message += "-----------------------\n";
+  message += "<!DOCTYPE html>\n";
+  message += "<html>\n";
+  message += "<head>\n";
+  message += "\t<title> TTGO Demo </title>\n";
+  message += "\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+  message += "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"dark.css\"/>\n";
+  message += "\t<script>\n";
+  message += "\tfunction show1(){\n";
+  message += "\t\tdocument.getElementById('sta').style.display ='none';\n";
+  message += "\t}\n";
+  message += "\tfunction show2(){\n";
+  message += "\t\tdocument.getElementById('sta').style.display = 'block';\n";
+  message += "\t}\n";
+  message += "\t</script>\n";
+  message += "</head>\n";
+  message += "<body>\n";
+  message += "\t<div class=\"header\">\n";
+  message += "\t\t<img src=\"avatar-petr_100px.jpg\" alt=\"logo\" />\n";
+  message += "\t\t<h1>TTGO Demo</h1>\n";
+  message += "\t</div>\n";
+  message += "\n";
+  message += "\t<div class=\"sidebar\">\n";
+  message += "\t\t<a href=\"index.html\">Home</a>\n";
+  message += "\t\t<a class=\"active\" href=\"settings.html\">Wifi Settings</a>\n";
+  message += "\t</div>\n";
+  message += "\n";
+  message += "\t<div class=\"content\">\n";
+  message += "\t\t<form action=\"#\">\n";
+  wifi_mode_t wifiMode = WiFi.getMode();
+  message += "\t\t\t<input type=\"radio\" name=\"tab\" value=\"wifi_ap\" onclick=\"show1();\" "+(wifiMode==WIFI_MODE_AP ? "checked":"")+"/>AP<br/>\n";
+  message += "\t\t\t<input type=\"radio\" name=\"tab\" value=\"wifi_sta\" onclick=\"show2();\" "+(wifiMode==WIFI_MODE_STA ? "checked":"")+"/>STA<br/>\n";
+  message += "\t\t\t<div id=\"sta\" class=\"hide\">\n";
+  message += "\t\t\t<fieldset>\n";
+  message += "\t\t\t\t<label for=\"ssid\">SSID</label>\n";
+  /*message += "\t\t\t\t<select id=\"ssid\" name=\"ssid\">\n";
+  message += "\t\t\t\t<option value=\"australia\">Australia</option>\n";
+  message += "\t\t\t\t<option value=\"canada\">Canada</option>\n";
+  message += "\t\t\t\t<option value=\"usa\">USA</option>\n";
+  message += "\t\t\t\t</select>\n";*/
+  message += "\t\t\t\t<input type=\"text\" id=\"ssid\" name=\"ssid\">\n";
+  message += "\t\t\t\t<label for=\"password\">Password</label>\n";
+  message += "\t\t\t\t<input type=\"password\" id=\"password\" name=\"password\">\n";
+  message += "\t\t\t</fieldset>\n";
+  message += "\t\t\t</div>\n";
+  message += "\n";
+  message += "\t\t\t<input type=\"submit\" value=\"Submit\">\n";
+  message += "\t\t</form>\n";
+  message += "\t</div>\n";
+  message += "\t\n";
+  message += "\t<div class=\"footer\">\n";
+  message += "\t\t<p>&copy; Petr Abrham</p>\n";
+  message += "\t</div>\n";
+  message += "\n";
+  message += "</body>\n";
+  message += "</html>";
   
-  server.send(200, "text/plain", message);
+  server.send(200, "text/html", message);
 }
 
-
-const char styles_css[] PROGMEM= {"html{font-family:\"LucidaSans\",sans-serif;}\nbody{background:#2c2f34;color:#f2f2f2;}\n*{box-sizing:border-box;}\n.row::after{content:\"\";clear:both;display:table;}\n[class*=\"col-\"]{float:left;padding:15px;}\n.header{background-color:#3c3c3c;text-align:center;padding:15px;}\n.header img{float:left;border-radius:50%;width:80px;height:80px;}\n.header h1{position:relative;top:18px;left:10px;}\n.footer{background-color:#3c3c3c;text-align:center;font-size:12px;position:fixed;left:0;bottom:0;width:100%;}\n[class*=\"col-\"]{width:100%;}\n@media only screen and (min-width:768px){.col-1{width:8.33%;}.col-2{width:16.66%;}.col-3{width:25%;}.col-4{width:33.33%;}.col-5{width:41.66%;}.col-6{width:50%;}.col-7{width:58.33%;}.col-8{width:66.66%;}.col-9{width:75%;}.col-10{width:83.33%;}.col-11{width:91.66%;}.col-12{width:100%;}}"};
+// https://www.toptal.com/developers/cssminifier/
+const char styles_css[] PROGMEM= {"*{box-sizing:border-box}body{margin:0;font-family:Lato,sans-serif;background:#2c2f34;color:#f2f2f2}.header{background-color:#3c3c3c;text-align:center;padding:15px}.header img{float:left;border-radius:50%;width:80px;height:80px}.header h1{position:relative;top:18px;left:10px}.sidebar{margin:0;padding:0;width:200px;background-color:#3c3c3c;position:fixed;height:100%;overflow:auto}.sidebar a{display:block;color:#3549ff;padding:16px;text-decoration:none}.sidebar a.active{background-color:#0f186b;color:#fff}.sidebar a:hover:not(.active){background-color:#555;color:#fff}.footer{background-color:#3c3c3c;text-align:center;font-size:12px;padding:15px;position:fixed;left:0;bottom:0;width:100%;height:20px}div.content{margin-left:200px;padding:1px 16px;height:500px}.hide{display:none}input,select{width:100%;padding:12px 20px;margin:8px 0;display:block;border:1px solid #ccc;border-radius:4px;box-sizing:border-box}input[type=radio]{width:30px;padding:12px 20px;margin:8px 0;display:inline-block;border:1px solid #ccc}input[type=submit]{width:25%;background-color:#0f186b;color:#fff;padding:14px 20px;margin:8px 0;border:none;border-radius:4px;cursor:pointer}input[type=submit]:hover{background-color:#3549ff}fieldset{border-radius:4px}@media screen and (max-width:700px){.sidebar{width:100%;height:auto;position:relative}.sidebar a{float:left}div.content{margin-left:0}}@media screen and (max-width:360px){.sidebar a{text-align:center;float:none}}"};
 void HandleStylesCss()
 {
   server.send_P(200, "text/css", styles_css);
@@ -146,6 +194,7 @@ void HandleStylesCss()
 void WebServerInit()
 {
   server.on("/", HandleRoot);
+  server.on("/index", HandleRoot);
   server.on("/setup", HandleSetup);
 
   server.on("/styles.css", HandleStylesCss);

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> TTGO Demo </title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="dark.css"/>
+    <script>
+        function show1(){
+            document.getElementById('sta').style.display ='none';
+            }
+        function show2(){
+            document.getElementById('sta').style.display = 'block';
+            }    
+    </script>
+</head>
+<body>
+	<div class="header">
+		<img src="avatar-petr_100px.jpg" alt="logo" />
+		<h1>TTGO Demo</h1>
+	</div>
+
+	<div class="sidebar">
+		<a href="index.html">Home</a>
+		<a class="active" href="settings.html">Wifi Settings</a>
+	</div>
+
+	<div class="content">
+        <form action="#">
+            <input type="radio" name="tab" value="wifi_ap" onclick="show1();" checked/>AP<br/>
+            <input type="radio" name="tab" value="wifi_sta" onclick="show2();" />STA<br/>
+            <div id="sta" class="hide">
+            <fieldset>
+                <label for="ssid">SSID</label>
+                <select id="ssid" name="ssid">
+                <option value="australia">Australia</option>
+                <option value="canada">Canada</option>
+                <option value="usa">USA</option>
+                </select>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password">
+            </fieldset>
+            </div>
+          
+            <input type="submit" value="Submit">
+          </form>       
+	</div>
+	
+	<div class="footer">
+		<p>&copy; Petr Abrham</p>
+	</div>
+
+</body>
+</html>
