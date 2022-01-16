@@ -3,7 +3,7 @@
 <head>
     <title> TTGO Demo </title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="dark.css"/>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
     <script>
         function show1(){
             document.getElementById('sta').style.display ='none';
@@ -21,26 +21,27 @@
 
 	<div class="sidebar">
 		<a href="index.html">Home</a>
-		<a class="active" href="settings.html">Wifi Settings</a>
+		<a class="active" href="setup.html">Wifi Settings</a>
 	</div>
 
 	<div class="content">
         <form action="#">
-            <input type="radio" name="tab" value="wifi_ap" onclick="show1();" checked/>AP<br/>
-            <input type="radio" name="tab" value="wifi_sta" onclick="show2();" />STA<br/>
+            <input type="radio" name="wifimode" value="wifi_ap" onclick="show1();" checked/>AP<br/>
+            <input type="radio" name="wifimode" value="wifi_sta" onclick="show2();" />STA<br/>
             <div id="sta" class="hide">
             <fieldset>
                 <label for="ssid">SSID</label>
-                <select id="ssid" name="ssid">
+				<input type="text" id="ssid" name="ssid" value="SSIDNAME">
+                <!--select id="ssid" name="ssid">
                 <option value="australia">Australia</option>
                 <option value="canada">Canada</option>
                 <option value="usa">USA</option>
-                </select>
+                </select-->
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password">
             </fieldset>
             </div>
-          
+            <input type="hidden" id="reset" name="reset" value="now">
             <input type="submit" value="Submit">
           </form>       
 	</div>

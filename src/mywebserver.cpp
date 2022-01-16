@@ -57,17 +57,18 @@ void HandleRoot()
   message += "<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\">\n";
   message += "</head>\n";
   message += "<body>\n";
+
   message += "<div class=\"header\">\n";
 	message += "<img src=\"avatar.jpg\" alt=\"avatar\" />\n";
 	message += "<h1>TTGO Demo</h1>\n";
 	message += "</div>\n";
 
-  message += "<div class=\"row\">\n";
-  message += "<div class=\"col-2\">\n";
-  message += "<a href=\"setup\">Setup page</a>\n";
+  message += "<div class=\"sidebar\">\n";
+  message += "\t\t<a class=\"active\" href=\"index.html\">Home</a>\n";
+  message += "\t\t<a href=\"setup.html\">Wifi Settings</a>\n";
   message += "</div>\n";
 
-  message += "<div class=\"col-10\">\n";
+  message += "<div class=\"content\">\n";
   message += "<h2>Hello from TTGO!</h2>\n";
   message += "<p>Up time: ";
   message += String(millis()/1000);
@@ -76,9 +77,7 @@ void HandleRoot()
   message += "<br/>\n";
   message += "<img src=\"pic_bulbon.gif\" width=\"100\" height=\"180\">\n";
   message += "</div>\n";
-  message += "</div>\n";
-
-
+  
   message += "<div class=\"footer\">\n";
   message += "<p>&copy; Petr Abrham</p>\n";
   message += "</div>\n";
@@ -99,6 +98,24 @@ void HandleSetup()
     argName = server.argName(i);
     argName.toLowerCase();
     
+    if (argName==String("wifimode")) {
+      str = server.arg(i);
+      if (str == String("wifi_ap"))
+      {
+        NVS.setInt(NVS_KEY_WIFIMODE, (uint8_t) WIFI_MODE_AP);
+      }
+      else if (str == String("wifi_sta"))
+      {
+        NVS.setInt(NVS_KEY_WIFIMODE, (uint8_t) WIFI_MODE_STA);
+      }
+      else
+      {
+        NVS.setInt(NVS_KEY_WIFIMODE, (uint8_t) WIFI_MODE_NULL);
+      }
+      //NVS.erase(NVS_KEY_SSID, true);
+      //NVS.erase(NVS_KEY_PSWD, true);
+    }
+
     if (argName==String("ssid")) {
       str = server.arg(i);
       NVS.setString(NVS_KEY_SSID, str);
@@ -119,7 +136,6 @@ void HandleSetup()
   Serial.print("Server Method = "); 
   Serial.println((server.method() == HTTP_GET) ? "GET" : "POST");
   Serial.println("Arguments = " + String(server.args()));
-
   for (i = 0; i < server.args(); i++) {
     Serial.println(" " + server.argName(i) + ": " + server.arg(i));
   }
@@ -129,7 +145,7 @@ void HandleSetup()
   message += "<head>\n";
   message += "\t<title> TTGO Demo </title>\n";
   message += "\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-  message += "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"dark.css\"/>\n";
+  message += "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\"/>\n";
   message += "\t<script>\n";
   message += "\tfunction show1(){\n";
   message += "\t\tdocument.getElementById('sta').style.display ='none';\n";
@@ -140,45 +156,41 @@ void HandleSetup()
   message += "\t</script>\n";
   message += "</head>\n";
   message += "<body>\n";
-  message += "\t<div class=\"header\">\n";
-  message += "\t\t<img src=\"avatar-petr_100px.jpg\" alt=\"logo\" />\n";
-  message += "\t\t<h1>TTGO Demo</h1>\n";
-  message += "\t</div>\n";
-  message += "\n";
+
+  message += "<div class=\"header\">\n";
+	message += "<img src=\"avatar.jpg\" alt=\"avatar\" />\n";
+	message += "<h1>TTGO Demo</h1>\n";
+	message += "</div>\n";
+
   message += "\t<div class=\"sidebar\">\n";
   message += "\t\t<a href=\"index.html\">Home</a>\n";
-  message += "\t\t<a class=\"active\" href=\"settings.html\">Wifi Settings</a>\n";
+  message += "\t\t<a class=\"active\" href=\"setup.html\">Wifi Settings</a>\n";
   message += "\t</div>\n";
-  message += "\n";
+
   message += "\t<div class=\"content\">\n";
-  message += "\t\t<form action=\"#\">\n";
-  wifi_mode_t wifiMode = WiFi.getMode();
-  message += "\t\t\t<input type=\"radio\" name=\"tab\" value=\"wifi_ap\" onclick=\"show1();\" "+(wifiMode==WIFI_MODE_AP ? "checked":"")+"/>AP<br/>\n";
-  message += "\t\t\t<input type=\"radio\" name=\"tab\" value=\"wifi_sta\" onclick=\"show2();\" "+(wifiMode==WIFI_MODE_STA ? "checked":"")+"/>STA<br/>\n";
+  message += "\t\t<form action=\"setup.html\">\n";
+  str = (WiFi.getMode()==WIFI_MODE_AP) ? "checked":"";
+  message += "\t\t\t<input type=\"radio\" name=\"wifimode\" value=\"wifi_ap\" onclick=\"show1();\" " + str + "/>AP<br/>\n";
+  str = (WiFi.getMode()==WIFI_MODE_STA) ? "checked":"";
+  message += "\t\t\t<input type=\"radio\" name=\"wifimode\" value=\"wifi_sta\" onclick=\"show2();\" " + str + "/>STA<br/>\n";
   message += "\t\t\t<div id=\"sta\" class=\"hide\">\n";
   message += "\t\t\t<fieldset>\n";
   message += "\t\t\t\t<label for=\"ssid\">SSID</label>\n";
-  /*message += "\t\t\t\t<select id=\"ssid\" name=\"ssid\">\n";
-  message += "\t\t\t\t<option value=\"australia\">Australia</option>\n";
-  message += "\t\t\t\t<option value=\"canada\">Canada</option>\n";
-  message += "\t\t\t\t<option value=\"usa\">USA</option>\n";
-  message += "\t\t\t\t</select>\n";*/
-  message += "\t\t\t\t<input type=\"text\" id=\"ssid\" name=\"ssid\">\n";
+  message += "\t\t\t\t<input type=\"text\" id=\"ssid\" name=\"ssid\" value=\"" + NVS.getString(NVS_KEY_SSID) + "\">\n";
   message += "\t\t\t\t<label for=\"password\">Password</label>\n";
   message += "\t\t\t\t<input type=\"password\" id=\"password\" name=\"password\">\n";
   message += "\t\t\t</fieldset>\n";
   message += "\t\t\t</div>\n";
-  message += "\n";
+  message += "\t\t\t<input type=\"hidden\" id=\"reset\" name=\"reset\" value=\"now\">\n";
   message += "\t\t\t<input type=\"submit\" value=\"Submit\">\n";
   message += "\t\t</form>\n";
   message += "\t</div>\n";
-  message += "\t\n";
+
   message += "\t<div class=\"footer\">\n";
   message += "\t\t<p>&copy; Petr Abrham</p>\n";
   message += "\t</div>\n";
   message += "\n";
-  message += "</body>\n";
-  message += "</html>";
+  message += "</body></html>\n";
   
   server.send(200, "text/html", message);
 }
@@ -194,8 +206,8 @@ void HandleStylesCss()
 void WebServerInit()
 {
   server.on("/", HandleRoot);
-  server.on("/index", HandleRoot);
-  server.on("/setup", HandleSetup);
+  server.on("/index.html", HandleRoot);
+  server.on("/setup.html", HandleSetup);
 
   server.on("/styles.css", HandleStylesCss);
 

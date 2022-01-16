@@ -17,10 +17,11 @@ CMyWifi::CMyWifi()
 void CMyWifi::Init()
 {
   // have a wifi credentials stored in NVS?
+  wifi_mode_t wifimode = static_cast<wifi_mode_t>(NVS.getInt(NVS_KEY_WIFIMODE));
   String ssid = NVS.getString(NVS_KEY_SSID);
   String pswd = NVS.getString(NVS_KEY_PSWD);
 
-  if (ssid.isEmpty() || pswd.isEmpty())
+  if (wifimode != WIFI_MODE_STA || ssid.isEmpty())
   {
     // local AP
     m_stateConnection = CreateAP();
@@ -39,6 +40,11 @@ void CMyWifi::Init()
     }
     else 
     {
+      // initalize 
+      if (wifimode != WIFI_MODE_STA)
+      {
+        NVS.setInt(NVS_KEY_WIFIMODE, (uint8_t) WIFI_MODE_STA);
+      }
       m_stateConnection = true;
     }
   }
